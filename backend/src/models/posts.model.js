@@ -1,4 +1,5 @@
 import mongoose ,{Schema} from "mongoose";
+import { type } from "os";
 
 
 const postsSchema = new Schema({
@@ -16,9 +17,11 @@ const postsSchema = new Schema({
         type : mongoose.Schema.Types.ObjectId,
         ref : "User"
     },
-    postImage : {
-        type : String,
-    }
+    postImage : [
+        {
+            type :String
+        }
+    ]
 } , { timestamps : true})
 
 const Posts = mongoose.model("posts" , postsSchema)
