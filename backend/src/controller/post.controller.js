@@ -59,7 +59,7 @@ export const createPost = asyncHandler( async (req , res ) => {
 
 export const getAllPosts = asyncHandler( async (req ,res) =>{
     const allPosts = await Posts.find()
-    console.log("all posts" ,allPosts);
+    // console.log("all posts" ,allPosts);
 
     return res.status(200)
     .json( new ApiResponse( 200 ,"All posts are here" , allPosts))
