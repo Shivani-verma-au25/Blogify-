@@ -1,13 +1,13 @@
 import dotenv from 'dotenv'
 import express from 'express'
-import Cors from 'cors'
+import cors from 'cors'
 import cookieParser from 'cookie-parser'
 dotenv.config()
 
 const app = express()
 
-app.use(Cors({
-  origin: 'http://localhost:5173', // your frontend port
+app.use(cors({
+  origin: "http://localhost:5173", // or your frontend URL
   credentials: true
 }));
 app.use(express.json({limit : '16kb'}))

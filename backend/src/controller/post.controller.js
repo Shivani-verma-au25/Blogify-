@@ -3,7 +3,12 @@ import {ApiError} from '../utils/apiError.js'
 import {ApiResponse} from '../utils/apiResponse.js'
 import Posts from '../models/posts.model.js';
 import { uploadOnCloudinary } from '../utils/cloudinary.js';
+import User from '../models/user.model.js';
 
+
+
+
+// create post
 export const createPost = asyncHandler( async (req , res ) => {
     const {title, content} = req.body;
 
@@ -57,6 +62,7 @@ export const createPost = asyncHandler( async (req , res ) => {
     ))
 })
 
+// get app post
 export const getAllPosts = asyncHandler( async (req ,res) =>{
     const allPosts = await Posts.find()
     // console.log("all posts" ,allPosts);
@@ -65,6 +71,8 @@ export const getAllPosts = asyncHandler( async (req ,res) =>{
     .json( new ApiResponse( 200 ,"All posts are here" , allPosts))
 })
 
+
+// update post 
 export const updatePost = asyncHandler( async (req ,res ) => {
     const {id} = req.params;
     const {title ,content } = req.body;
@@ -85,7 +93,7 @@ export const updatePost = asyncHandler( async (req ,res ) => {
     }
 
 
-    const updatedPost = await Posts.findByIdAndUpdate(
+const updatedPost = await Posts.findByIdAndUpdate(
         id ,
         {
             $set : {
@@ -106,4 +114,118 @@ export const updatePost = asyncHandler( async (req ,res ) => {
 
     return res.status(201)
     .json( new ApiResponse( 201 , "Post updated !" , updatedPost))
+})
+
+
+// get all post from 
+
+export const getPostfromUserCreate = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+//   console.log(req.user._id );
+//   console.log(id );
+  
+if (req.user._id.toString() !== id.toString()) {
+  throw new ApiError(403, "You are not authorized to view these posts");
+}
+
+  if (!id) {
+    throw new ApiError(400, "User ID is required");
+  }
+  
+  const user = await User.findById(id);
+  if (!user) {
+    throw new ApiError(400, "User not found");
+  }
+
+    const allposts = []
+  // 🔥 Get all posts created by this user
+  const posts = await Posts.find( {author: id}).populate('author','fullName email');
+
+  if (!posts || posts.length === 0) {
+    throw new ApiError(404, "No posts found for this user");
+  }
+
+  allposts.push(posts) 
+  
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "All posts created by the user",
+      allposts
+    )
+  );
+});
+
+// delete posts
+
+export const deletePost = asyncHandler( async (req,res) =>{
+
+    //first want user login 
+    // want post id which is gonna delete
+
+    const {id} = req.params; // post id
+    const userId  = req.user._id
+    if (!id) {
+        throw new ApiError(404,"Id required !")
+    }
+    
+    const deletePost = await Posts.findByIdAndDelete({
+        _id: id,
+        createdBy : userId
+    })
+    
+    if (!deletePost ) {
+        throw new ApiError(403, "You are not authorized to delete this post or it doesn't exist.");
+    }
+
+    return res.status(200)
+    .json(new ApiResponse( 200 , "Post deleted successfully") 
+    )
+
+})
+
+
+// editPost 
+export const EditPost = asyncHandler( async (req,res ) => {
+    try {
+        const {id} = req.params; // post id
+        const userId = req.user._id;
+    
+        const {title , content , postImage} = req.body;
+
+        if ([title ,content ].some((field) => field.trim() === "")) {
+            throw new ApiError(400 , " All feids are required")
+        }
+    
+        if (!id) {
+            throw new ApiError(400 , "Post ID is required.")
+        }
+    
+        const editPost = await Posts.findOneAndUpdate(
+            { _id : id , userId},
+            {
+                $set : {
+                    title ,
+                    content ,
+                    postImage ,
+    
+                }
+            },
+            {
+                new : true,
+                runValidators : true
+            }
+        )
+    
+        if (!editPost) {
+            throw new ApiError(403, "You are not authorized to edit this post or post doesn't exist.");
+        }
+    
+        return res.status(200)
+        .json( new ApiResponse ( 200 , "Post edit" , editPost))
+    } catch (error) {
+        console.error("🔥 Edit Post Error:", error);
+        throw new ApiError(500 ,error.message || "server is crashing" )
+    }
 })

@@ -13,7 +13,7 @@ export const checkRouter = asyncHandler(async( req , res) => {
 // generate accesstoken  or refreshToken 
 
 export const generateAccessTokenAndRefreshToken = async (user_Id) =>{
-    // console.log("user_id" , user_Id);
+    console.log("user_id" , user_Id);
     
     try {
         const user = await User.findById(user_Id)
@@ -98,7 +98,8 @@ export const loginUser = asyncHandler( async ( req,res) => {
 
     const options = {
         httpOnly : true,
-        secure : true
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
     }
 
     return res.status(200)
@@ -113,6 +114,22 @@ export const loginUser = asyncHandler( async ( req,res) => {
 
          ))
 }) 
+
+export const getCurrentUSer = asyncHandler( async ( req, res) => {
+    try {
+        const user = await User.findById( req?.user._id).select("-password")
+        if (!user) {
+            throw new ApiError(401 , "User not found !")
+        }
+        
+        return res.status(200)
+        .json( new ApiResponse(200 , "User found" , user))
+    } catch (error) {
+        throw new ApiError( 400 , error?.message || error)
+        console.log(error);
+        
+    }
+})
 
 
 // user Loggout
