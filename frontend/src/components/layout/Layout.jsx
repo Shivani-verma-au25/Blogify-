@@ -14,6 +14,10 @@ function Layout({children , authentication = true}) {
     if (authentication && authStatus !== authentication) {
       navigate("/login");
     }
+    // false               false           false
+    if (authentication && authStatus !== authentication) {
+      navigate("/");
+    }
 
     if (!authentication && authStatus !== authentication) {
       navigate("/");

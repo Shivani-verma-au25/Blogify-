@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import useLogout from '../hooks/useLogout';
 
 const GoogleAuthLogin = () => {
   const [user, setUser] = useState(null); // ← store user data here
+
+  const logout = useLogout()
+  const logoutgoogleuser = () =>{
+    logout()
+  }
 
   useEffect(() => {
     /* global google */
@@ -45,6 +51,8 @@ const GoogleAuthLogin = () => {
           <img src={user.picture} alt="Profile" style={{ width: 80, borderRadius: '50%' }} />
         </div>
       )}
+
+      <div> <button onClick={logoutgoogleuser}>Logout</button></div>
     </div>
   );
 };

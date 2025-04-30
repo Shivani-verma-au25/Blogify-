@@ -61,7 +61,7 @@ export const registerUser = asyncHandler( async ( req, res ) => {
         throw new ApiError(401 , "Something went wrong while registering user!")
     }
 
-    return res.status(200).json( new ApiResponse( 200 , createdUser , "User create successfully !" ))
+    return res.status(200).json( new ApiResponse( 200 ,  "User create successfully !",createdUser ))
 
 })
 
@@ -107,10 +107,10 @@ export const loginUser = asyncHandler( async ( req,res) => {
     .cookie('refreshToken' , refreshToken , options)
     .json(
         new ApiResponse(200 ,
+         "User Logged in succeessfully!",
             {
                 user : loggedInUser, accessToken , refreshToken
             },
-         "User Logged in succeessfully!",
 
          ))
 }) 
@@ -155,5 +155,5 @@ export const logoutUser = asyncHandler( async (req, res) => {
     return res.status(200)
     .clearCookie("accessToken" , options)
     .clearCookie("refreshToken" , options)
-    .json(new ApiResponse(200 , {} , "User Logged out successfully !"))
+    .json(new ApiResponse(200 , "User Logged out successfully !",{}  ))
 })

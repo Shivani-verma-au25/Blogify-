@@ -1,6 +1,6 @@
 import {Router} from 'express'
 import {verifyJWT} from '../middlewares/auth.middleware.js'
-import { createPost, deletePost, EditPost, getAllPosts, getPostfromUserCreate, updatePost } from '../controller/post.controller.js';
+import { createPost, deletePost, EditPost, getAllPosts, getPostById, getPostfromUserCreate, updatePost } from '../controller/post.controller.js';
 import {upload} from '../middlewares/mullter.middleware.js';
 
 const router = Router()
@@ -24,6 +24,7 @@ router.route('/update-post/:id').post(verifyJWT,upload.fields([
 router.route('/all-users-posts/:id').get(verifyJWT , getPostfromUserCreate)
 router.route('/delete-users-post/:id').post(verifyJWT , deletePost)
 router.route('/edit-users-post/:id').post(verifyJWT , EditPost)
+router.route('/get-single-post/:id').get(verifyJWT , getPostById)
 
 
 

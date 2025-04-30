@@ -15,12 +15,12 @@ const client = new OAuth2Client({
   redirectUri: process.env.GOOGLE_REDIRECT_URI,
 });
 
-console.log(process.env.GOOGLE_CLIENT_ID); // Make sure it's not undefined
+// console.log(process.env.GOOGLE_CLIENT_ID); // Make sure it's not undefined
 
-
+// google login 
 export const googleAuthLoginUser = asyncHandler( async (req, res) => {
   const { idToken } = req.body;
-  console.log("token from google" ,idToken);
+  // console.log("token from google" ,idToken);
   
   if (!idToken) return res.status(400).json({ error: "Missing ID Token" });
 
@@ -33,7 +33,7 @@ export const googleAuthLoginUser = asyncHandler( async (req, res) => {
     const {email , name } = payload; // picture when update the db ist pending
     
     // Optional: create/find user in DB
-    let user = await User.findById(email._id)
+    let user = await User.findOne({email})
     if (!user) {
         user = await User.create({
         fullName : name,
@@ -43,17 +43,26 @@ export const googleAuthLoginUser = asyncHandler( async (req, res) => {
     }
 
     const {accessToken , refreshToken} = await generateAccessTokenAndRefreshToken(user._id)
-    console.log("✅ Verified Google user:", payload);
+    // console.log("✅ Verified Google user:", payload);
 
+    console.log('accessToken', accessToken);
+    console.log('refreshToken', refreshToken);
+    
     const loggedinUser = await User.findById(user._id).select("-password -refreshToken")
+
 
     if (!loggedinUser) {
       throw new ApiError(400 , "Login failed !")
     } 
+    console.log("loggedinUser" , loggedinUser);
+    
+    const isProd = process.env.NODE_ENV === "production";
 
     const options = {
       httpOnly : true,
-      secure : true
+        secure: process.env.NODE_ENV === "production",
+         sameSite: isProd ? "none" : "lax"
+
     }
 
     return res.status(200)
@@ -71,3 +80,36 @@ export const googleAuthLoginUser = asyncHandler( async (req, res) => {
     res.status(400).json({ error: "Invalid ID Token" });
   }
 })
+
+// google logout 
+
+export const googleLogOut = asyncHandler(async (req, res) => {
+  console.log("📤 Logout triggered for req.user:", req.user);
+
+  if (!req.user?._id) {
+    return res.status(401).json({ error: "Unauthorized! No user in request." });
+  }
+
+  await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $unset: {
+        refreshToken: 1,
+      },
+    },
+    {
+      new: true,
+    }
+  );
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+
+  return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(new ApiResponse(200, {}, "User logged out!"));
+});

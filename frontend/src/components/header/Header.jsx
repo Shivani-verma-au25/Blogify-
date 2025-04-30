@@ -1,10 +1,46 @@
 import React from "react";
-import { Link } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
+import Container from '../container/Container'
+import { useSelector } from "react-redux";
+import LogoutButton from "../LogoutButton";
 function Header() {
+  const navigate = useNavigate()
+  const authStatus = useSelector((state) => state.auth.status)
+  console.log("authstatus" ,authStatus)
+  
+  const navLinks = [
+    {
+      name: 'Home',
+      path: "/",
+      active: true
+    }, 
+    {
+      name: "Login",
+      path: "/login",
+      active: !authStatus,
+  },
+  {
+      name: "Signin",
+      path: "/signin",
+      active: !authStatus,
+  },
+  {
+      name: "All Posts",
+      path: "/all-posts",
+      active: authStatus,
+  },
+  {
+      name: "Add Post",
+      path: "/add-post",
+      active: authStatus,
+  },
+  ]
+  
+
   return (
     <header>
-      <nav className="bg-white border-gray-200 dark:bg-gray-900">
+      <Container>
+        <nav className="bg-white border-gray-200 dark:bg-gray-900">
         <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
           <Link
             to="/"
@@ -45,37 +81,37 @@ function Header() {
           </button>
           <div className="hidden w-full md:block md:w-auto" id="navbar-default">
             <ul className="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
-              <li>
-                <Link
-                  to="/"
-                  className="block py-2 px-3 text-white bg-blue-700 rounded-sm md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500"
-                  aria-current="page"
-                >
-                  Home
+              {navLinks.map((item) => (
+                item.active ? (
+                  <li>
+                    <Link
+                      to={item.path}
+                      className="block py-2 px-3 text-white bg-blue-700 rounded-sm md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500"
+                      aria-current="page"
+                    >
+                    {/* <button  
+                    onClick={() => navigate(item.path)}
+                    >{item.name}</button> */}
+                    {item.name}
                 </Link>
               </li>
-              <li>
-                <Link
-                  to="/login"
-                  className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-                >
-                  Log In
-                </Link>
-              </li>
-             
+                ) : null
+              ))}
+
+              {/* logout button */}
+              {
+                authStatus && (
+                  <li>
+                    <LogoutButton />
+                  </li>
+                )
+              }
               
-              <li>
-                <Link
-                  to="/signin"
-                  className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-                >
-                  Sing In
-                </Link>
-              </li>
             </ul>
           </div>
         </div>
       </nav>
+      </Container>
     </header>
   );
 }
